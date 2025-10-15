@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: traveldb
+      MYSQL_USER: traveluser
+      MYSQL_PASSWORD: travelpass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  backend:
+    build: ./travel-backend
+    container_name: travel-backend
+    restart: always
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/traveldb
+      SPRING_DATASOURCE_USERNAME: traveluser
+      SPRING_DATASOURCE_PASSWORD: travelpass
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+
+  frontend:
+    build: ./travel-frontend
+    container_name: travel-frontend
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:8081
+    ports:
+      - "5173:80"
+
+volumes:
+  mysql_data:
